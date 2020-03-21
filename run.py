@@ -4,12 +4,13 @@ from datetime import datetime
 from enum import Enum
 import os, sys
 from typing import List
+
+from gpiozero import Button
 import pygame
-from pygame.locals import KEYDOWN, K_ESCAPE, K_DOWN, K_UP, K_RETURN
+from pygame.locals import KEYDOWN, K_ESCAPE, K_DOWN, K_UP, K_RETURN, K_BACKSPACE, KMOD_NONE
 
 from roundrects import round_rect
-from gaugette import Switch, RotaryEncoder, Gpio
-
+#from gaugette import RotaryEncoder, Gpio
 
 # Setup touchscreen
 os.environ["SDL_FBDEV"] = "/dev/fb1"
@@ -23,12 +24,12 @@ SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 NUM_JOBS_DISPLAYED = 5
 ENC_A_PIN = 14  # Note these are not the actual rpi pin #'s but the BCM #s
 ENC_B_PIN = 15
-SW_PIN = 18
+SW_PIN = 23
 
 # NOTE: OpenSans license (Apache 2.0) here: https://www.fontsquirrel.com/license/open-sans
-ID_FONT = './OpenSans-Semibold.ttf'  # FIXME these paths are gonna be wrong for users.
-TIME_FONT = './OpenSans-Regular.ttf'
-DESC_FONT = './OpenSans-LightItalic.ttf'
+ID_FONT = '/home/pi/WorkPi/OpenSans-Semibold.ttf'  # FIXME these paths are gonna be wrong for users.
+TIME_FONT = '/home/pi/WorkPi/OpenSans-Regular.ttf'
+DESC_FONT = '/home/pi/WorkPi/OpenSans-LightItalic.ttf'
 LOREM_IPSUM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor "\
     "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "\
     "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor"\
@@ -197,7 +198,9 @@ class TimerDisplay(WorkDisplay):
             i += last_whitesp_idx + 1
 
 if __name__ == "__main__":
+
     # init
+    print('initializing')
     pygame.init()
     pygame.mouse.set_visible(False)
 
@@ -217,36 +220,50 @@ if __name__ == "__main__":
     selector = JobDisplay(jobs_list)
     screen = pygame.display.set_mode(SCREEN_SIZE)
     selector.draw()
+    update_display = True
 
-    # Init rotary enc
-    encoder = RotaryEncoder(Gpio(), ENC_A_PIN, ENC_B_PIN)
-    encoder.start()
+    # Init I/O
+    #encoder = RotaryEncoder(Gpio(), ENC_A_PIN, ENC_B_PIN)
+    #encoder.start()
+
+    button = Button(SW_PIN, pull_up=True)
+    def __enter_timer_screen():
+        # pressing rotary encoder raises same event as pressing enter
+        pygame.event.post(
+            pygame.event.Event(
+                pygame.locals.KEYDOWN,
+                key=K_RETURN,
+                mod=KMOD_NONE
+            )
+        )
+    button.when_pressed = __enter_timer_screen
 
     # Interact + draw loop
-    draw_once = True
+    print("running")
     while True:
-        update_display = False or draw_once  # FIXME: make this go every second vs on-event in timer screen
-        if draw_once:
-            draw_once = False
 
-        # Handle rotary encoder
-        delta = encoder.get_cycles()
-        if delta != 0:
-            print ("rotated {}".format(delta))
+        # # Handle rotary encoder
+        # delta = encoder.get_cycles()
+        # if delta != 0:
+        #     print ("rotated {}".format(delta))
 
+        #     update_display = True
+        #     if delta < 0:
+        #         selector.move_selection(Direction.DOWN)
+        #     elif delta > 0:
+        #         selector.move_selection(Direction.UP)
+
+        # Get any events
+        pyg_events = pygame.event.get()
+        if pyg_events:
             update_display = True
-            if delta < 0:
-                selector.move_selection(Direction.DOWN)
-            elif delta > 0:
-                selector.move_selection(Direction.UP)
 
-        # Handle general I/O (i.e. keyboard)
-        for event in pygame.event.get():
+        # Manipulate UI via I/O event type
+        for event in pyg_events:
 
-            # debug coords for touch screen
+            # coords for touch screen  #TODO make this do something
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = (pygame.mouse.get_pos() [0], pygame.mouse.get_pos() [1])
-                # on_touch() TODO
                 print("mouse on pos {}".format(pos))
 
             # handle keys
@@ -262,17 +279,15 @@ if __name__ == "__main__":
                         selector.move_selection(Direction.UP)
                         print("kup")
                     elif event.key == K_RETURN:
-                        mode = DisplayMode.TIMER
                         timer.set_job(selector.get_job())
+                        mode = DisplayMode.TIMER
                         print("kenter")
                 elif mode == DisplayMode.TIMER:
-                    if event.key == K_ESCAPE:
+                    if event.key == K_ESCAPE or event.key == K_BACKSPACE:
                         mode = DisplayMode.SELECTOR
                         print("kescape: EXIT TO SELECTOR")
 
-            update_display = True
-
-        # Update screen
+        # Draw screen if we saw any events
         if update_display:
             if mode == DisplayMode.SELECTOR:
                 selector.draw()
@@ -281,3 +296,4 @@ if __name__ == "__main__":
             else:
                 raise ValueError("UNKNOWN MODE")
             pygame.display.update()
+            update_display = False
