@@ -9,6 +9,8 @@ import pygame
 from pygame.locals import KEYDOWN, K_ESCAPE, K_DOWN, K_UP, K_RETURN, K_BACKSPACE, KMOD_NONE
 from roundrects import round_rect
 
+from spoof_jobs import SPOOF_JOBS  # TODO: remove
+
 # Setup touchscreen
 os.environ["SDL_FBDEV"] = "/dev/fb1"
 os.environ["SDL_MOUSEDEV"] = "/dev/input/touchscreen"
@@ -28,12 +30,6 @@ TIMER_REFRESH_SECONDS = 1
 ID_FONT = '/home/pi/WorkPi/OpenSans-Semibold.ttf'  # FIXME these paths are gonna be wrong for users.
 TIME_FONT = '/home/pi/WorkPi/OpenSans-Regular.ttf'
 DESC_FONT = '/home/pi/WorkPi/OpenSans-LightItalic.ttf'
-LOREM_IPSUM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor "\
-    "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "\
-    "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor"\
-    " in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur"\
-    " sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est"\
-    " laborum."
 
 SELECTOR_WIDTH = SCREEN_WIDTH - 8
 SELECTOR_HEIGHT = int(SCREEN_HEIGHT / NUM_JOBS_DISPLAYED) - 8
@@ -47,14 +43,6 @@ HIGHLIGHT_COLOUR = (249, 38, 114)
 TIME_COLOUR = (253, 151, 31)
 
 
-class Job(object):
-    def __init__(self, id: str, desc: str, elapsed: int):
-        """FIXME make elapsed a strftime format."""
-        self.id = id
-        self.desc = desc
-        self.elapsed = elapsed
-
-
 class Direction(Enum):
     UP = 1
     DOWN = 2
@@ -63,6 +51,14 @@ class Direction(Enum):
 class DisplayMode(Enum):
     SELECTOR = 1
     TIMER = 2
+
+
+class Job(object):
+    def __init__(self, id: str, desc: str, elapsed: timedelta):
+        """Just a container for the job id, description and elapsed time"""
+        self.id = id
+        self.desc = desc
+        self.elapsed = elapsed
 
 
 class WorkDisplay(object):
@@ -215,16 +211,14 @@ class TimerDisplay(WorkDisplay):
             (SELECTOR_WIDTH/2 - dis_time_width // 2, SCREEN_HEIGHT * .80)
         )
 
-        # FIXME: this should be replaced with something better, will be hard to change (diff screen)
+        # FIXME: below should be replaced with something better, hard to change (diff screen)
         max_line_len = 45 # chars
-        xoffset = 15
-        yoffset = 40
-        spacing = 17
+        xoffset, yoffset, spacing = 15, 40, 17
         ymax = SCREEN_HEIGHT * .53
         i, j, y = 0, 0, 0
         while i < len(self.job.desc):
 
-            # this is buggy...
+            # we only wanna blit stuff one line at a time...
             last_whitesp_idx = self.job.desc[i : i + max_line_len].rfind(' ')
             line = self.job.desc[i : i + last_whitesp_idx + 1]
             y = yoffset + j * spacing
@@ -252,20 +246,12 @@ if __name__ == "__main__":
     pygame.init()
     pygame.mouse.set_visible(False)
 
-    # Get job data TODO: Query JIRA
-    jobs_list = [
-        Job('DE-3334', LOREM_IPSUM, timedelta(days=1,minutes=3,seconds=4)),
-        Job('PS-6451', LOREM_IPSUM, timedelta(days=2,minutes=3,seconds=1)),
-        Job('PS-1121', LOREM_IPSUM, timedelta(days=1,minutes=2,seconds=2)),
-        Job('DE-7613', LOREM_IPSUM, timedelta(days=0,minutes=11,seconds=4)),
-        Job('DE-4242', LOREM_IPSUM, timedelta(days=0,minutes=26,seconds=0)),
-    ]
-    jobs_list.extend(jobs_list)
+    # TODO sync with JIRA!
 
     # Init disp
     mode = DisplayMode.SELECTOR
-    timer = TimerDisplay(jobs_list[0])
-    selector = JobDisplay(jobs_list)
+    timer = TimerDisplay(SPOOF_JOBS[0])
+    selector = JobDisplay(SPOOF_JOBS)
     screen = pygame.display.set_mode(SCREEN_SIZE)
     selector.draw()
     update_display = True
@@ -337,7 +323,7 @@ if __name__ == "__main__":
                         mode = DisplayMode.SELECTOR
                     timer.stop()
 
-        # Draw screen if we saw any events or it's been 5 seconds (for the timer)
+        # Draw screen if we saw any events or it's been enough second(s) (for the timer)
         cur_time = time.time()
         update_timer_elapsed = (
             mode == DisplayMode.TIMER and cur_time - last_update_time >= TIMER_REFRESH_SECONDS)
