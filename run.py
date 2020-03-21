@@ -9,8 +9,6 @@ import pygame
 from pygame.locals import KEYDOWN, K_ESCAPE, K_DOWN, K_UP, K_RETURN, K_BACKSPACE, KMOD_NONE
 from roundrects import round_rect
 
-from spoof_jobs import SPOOF_JOBS  # TODO: remove
-
 # Setup touchscreen
 os.environ["SDL_FBDEV"] = "/dev/fb1"
 os.environ["SDL_MOUSEDEV"] = "/dev/input/touchscreen"
@@ -41,7 +39,6 @@ DESC_COLOUR = (230, 219, 116)
 ID_COLOUR = (174, 129, 255)
 HIGHLIGHT_COLOUR = (249, 38, 114)
 TIME_COLOUR = (253, 151, 31)
-
 
 class Direction(Enum):
     UP = 1
@@ -239,6 +236,7 @@ class TimerDisplay(WorkDisplay):
             j += 1
             i += last_whitesp_idx + 1
 
+
 if __name__ == "__main__":
 
     # init
@@ -247,6 +245,33 @@ if __name__ == "__main__":
     pygame.mouse.set_visible(False)
 
     # TODO sync with JIRA!
+    # TODO: remove
+    # lets make some spoof jobs to display
+    SPOOF_DESCS = [
+        "Get rid of databases and import everything into CSVs so that nothing ever crashes",
+        "The company car needs washing.",
+        "Need to add a new user to JIRA.",
+        "Re-write fused-batchnorms in tf.keras so that is_training ACTUALLY works when you freeze it.",
+    ]
+
+    SPOOF_TIMES = [
+        timedelta(days=3, minutes=45, seconds=18),
+        timedelta(days=0, minutes=45, seconds=0),
+        timedelta(days=0, minutes=10, seconds=15),
+        timedelta(days=15, minutes=2, seconds=42),
+    ]
+
+    SPOOF_JOBS = [
+            Job('DE-1132', SPOOF_DESCS[0], SPOOF_TIMES[0]),
+            Job('ZD-8913', SPOOF_DESCS[1], SPOOF_TIMES[1]),
+            Job('JI-1121', SPOOF_DESCS[2], SPOOF_TIMES[2]),
+            Job('KR-7613', SPOOF_DESCS[3], SPOOF_TIMES[3]),
+    ]
+
+    # extend with random mixes
+    for i in range (5):
+        SPOOF_JOBS.append(Job('ZJ-{}000'.format(i) , choice(SPOOF_DESCS), choice(SPOOF_TIMES)))
+
 
     # Init disp
     mode = DisplayMode.SELECTOR
