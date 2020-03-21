@@ -3,7 +3,7 @@ One-button time-management with the Raspberry Pi.
 
 Ever get frustrated by JIRA's time logging? Replace all that time spent navigating crummy UI and doing mental math with a Work Pi on your desk!
 
-![workpi](https://github.com/PaulMcInnis/WorkPi/workpi.jpg)
+![workpi](https://github.com/PaulMcInnis/WorkPi/blob/master/workpi.jpg)
 
 It's very easy to use, with only one button
 
@@ -38,7 +38,7 @@ The following connections will be made between the rotary encoder and the RasPi-
 
 I recommend soldering these to the PCB so as not to ruin the expansion GPIO header on the RasPiTFT.
 
-![wiring](https://github.com/PaulMcInnis/WorkPi/wiring.png)
+![wiring](https://github.com/PaulMcInnis/WorkPi/blob/master/wiring.png)
 
 ##### Assembly
 
