@@ -4,11 +4,9 @@ from datetime import timedelta, datetime
 from enum import Enum
 import os, sys, sched, time
 from typing import List
-
-#from gpiozero import Button
+from gpiozero import Button
 import pygame
 from pygame.locals import KEYDOWN, K_ESCAPE, K_DOWN, K_UP, K_RETURN, K_BACKSPACE, KMOD_NONE
-
 from roundrects import round_rect
 
 # Setup touchscreen
@@ -272,41 +270,41 @@ if __name__ == "__main__":
     selector.draw()
     update_display = True
 
-    # # Init I/O
-    # enc_a = Button(ENC_A_PIN, pull_up=True)
-    # enc_b = Button(ENC_B_PIN, pull_up=True)
-    # def enc_a_rising():
-    #     if enc_b.is_pressed:
-    #         pygame.event.post(
-    #             pygame.event.Event(
-    #                 pygame.locals.KEYDOWN,
-    #                 key=K_DOWN,
-    #                 mod=KMOD_NONE
-    #             )
-    #         )
-    # def enc_b_rising():
-    #     if enc_a.is_pressed:
-    #         pygame.event.post(
-    #             pygame.event.Event(
-    #                 pygame.locals.KEYDOWN,
-    #                 key=K_UP,
-    #                 mod=KMOD_NONE
-    #             )
-    #         )
-    # enc_a.when_pressed = enc_a_rising
-    # enc_b.when_pressed = enc_b_rising
+    # Init I/O
+    enc_a = Button(ENC_A_PIN, pull_up=True)
+    enc_b = Button(ENC_B_PIN, pull_up=True)
+    def enc_a_rising():
+        if enc_b.is_pressed:
+            pygame.event.post(
+                pygame.event.Event(
+                    pygame.locals.KEYDOWN,
+                    key=K_DOWN,
+                    mod=KMOD_NONE
+                )
+            )
+    def enc_b_rising():
+        if enc_a.is_pressed:
+            pygame.event.post(
+                pygame.event.Event(
+                    pygame.locals.KEYDOWN,
+                    key=K_UP,
+                    mod=KMOD_NONE
+                )
+            )
+    enc_a.when_pressed = enc_a_rising
+    enc_b.when_pressed = enc_b_rising
 
-    # button = Button(SW_PIN, pull_up=True)
-    # def __enter_or_exit_timer_screen():
-    #     # pressing rotary encoder raises same event as pressing enter
-    #     pygame.event.post(
-    #         pygame.event.Event(
-    #             pygame.locals.KEYDOWN,
-    #             key=K_RETURN,
-    #             mod=KMOD_NONE
-    #         )
-    #     )
-    # button.when_pressed = __enter_or_exit_timer_screen
+    button = Button(SW_PIN, pull_up=True)
+    def __enter_or_exit_timer_screen():
+        # pressing rotary encoder raises same event as pressing enter
+        pygame.event.post(
+            pygame.event.Event(
+                pygame.locals.KEYDOWN,
+                key=K_RETURN,
+                mod=KMOD_NONE
+            )
+        )
+    button.when_pressed = __enter_or_exit_timer_screen
 
     # Interact + draw loop
     print("running")
