@@ -21,9 +21,9 @@ SCREEN_HEIGHT = 240
 SCREEN_WIDTH = 320
 SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 NUM_JOBS_DISPLAYED = 5
-ENC_A_PIN = 17  # Note these are not the actual rpi pin #'s but the BCM #s
-ENC_B_PIN = 18
-SW_PIN = 27
+ENC_A_PIN = 14  # Note these are not the actual rpi pin #'s but the BCM #s
+ENC_B_PIN = 15
+SW_PIN = 18
 
 # NOTE: OpenSans license (Apache 2.0) here: https://www.fontsquirrel.com/license/open-sans
 ID_FONT = './OpenSans-Semibold.ttf'  # FIXME these paths are gonna be wrong for users.
@@ -223,8 +223,11 @@ if __name__ == "__main__":
     encoder.start()
 
     # Interact + draw loop
+    draw_once = True
     while True:
-        update_display = False  # FIXME: make this go every second vs on-event in timer screen
+        update_display = False or draw_once  # FIXME: make this go every second vs on-event in timer screen
+        if draw_once:
+            draw_once = False
 
         # Handle rotary encoder
         delta = encoder.get_cycles()
