@@ -8,6 +8,7 @@ import pygame
 from pygame.locals import KEYDOWN, K_ESCAPE, K_DOWN, K_UP, K_RETURN
 
 from roundrects import round_rect
+from gaugette import Switch, RotaryEncoder, Gpio
 
 
 # Setup touchscreen
@@ -20,9 +21,12 @@ SCREEN_HEIGHT = 240
 SCREEN_WIDTH = 320
 SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 NUM_JOBS_DISPLAYED = 5
+ENC_A_PIN = 17  # Note these are not the actual rpi pin #'s but the BCM #s
+ENC_B_PIN = 18
+SW_PIN = 27
 
-# TODO: license here https://www.fontsquirrel.com/license/open-sans
-ID_FONT = './OpenSans-Semibold.ttf'
+# NOTE: OpenSans license (Apache 2.0) here: https://www.fontsquirrel.com/license/open-sans
+ID_FONT = './OpenSans-Semibold.ttf'  # FIXME these paths are gonna be wrong for users.
 TIME_FONT = './OpenSans-Regular.ttf'
 DESC_FONT = './OpenSans-LightItalic.ttf'
 LOREM_IPSUM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor "\
@@ -42,9 +46,8 @@ ID_COLOUR = (174, 129, 255)
 HIGHLIGHT_COLOUR = (249, 38, 114)
 TIME_COLOUR = (253, 151, 31)
 
-
 Job = namedtuple('Job', 'id desc elapsed')
-RectLike = namedtuple('Rect', 'x y width height')
+
 
 class Direction(Enum):
     UP = 1
@@ -196,7 +199,7 @@ class TimerDisplay(WorkDisplay):
 if __name__ == "__main__":
     # init
     pygame.init()
-    # pygame.mouse.set_visible(0) # makes mouse invisible
+    pygame.mouse.set_visible(False)
 
     # Get job data TODO: Query JIRA
     jobs_list = [
@@ -208,16 +211,33 @@ if __name__ == "__main__":
     ]
     jobs_list.extend(jobs_list)
 
-    # Init
+    # Init disp
     mode = DisplayMode.SELECTOR
     timer = TimerDisplay(jobs_list[0])
     selector = JobDisplay(jobs_list)
     screen = pygame.display.set_mode(SCREEN_SIZE)
     selector.draw()
 
+    # Init rotary enc
+    encoder = RotaryEncoder(Gpio(), ENC_A_PIN, ENC_B_PIN)
+    encoder.start()
+
     # Interact + draw loop
-    while 1:
-        do_update = False  # FIXME: make this go every second vs on-event in timer screen
+    while True:
+        update_display = False  # FIXME: make this go every second vs on-event in timer screen
+
+        # Handle rotary encoder
+        delta = encoder.get_cycles()
+        if delta != 0:
+            print ("rotated {}".format(delta))
+
+            update_display = True
+            if delta < 0:
+                selector.move_selection(Direction.DOWN)
+            elif delta > 0:
+                selector.move_selection(Direction.UP)
+
+        # Handle general I/O (i.e. keyboard)
         for event in pygame.event.get():
 
             # debug coords for touch screen
@@ -247,10 +267,10 @@ if __name__ == "__main__":
                         mode = DisplayMode.SELECTOR
                         print("kescape: EXIT TO SELECTOR")
 
-            do_update = True
+            update_display = True
 
         # Update screen
-        if do_update:
+        if update_display:
             if mode == DisplayMode.SELECTOR:
                 selector.draw()
             elif mode == DisplayMode.TIMER:
