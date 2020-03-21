@@ -10,7 +10,6 @@ import pygame
 from pygame.locals import KEYDOWN, K_ESCAPE, K_DOWN, K_UP, K_RETURN, K_BACKSPACE, KMOD_NONE
 
 from roundrects import round_rect
-#from gaugette import RotaryEncoder, Gpio
 
 # Setup touchscreen
 os.environ["SDL_FBDEV"] = "/dev/fb1"
@@ -223,11 +222,31 @@ if __name__ == "__main__":
     update_display = True
 
     # Init I/O
-    #encoder = RotaryEncoder(Gpio(), ENC_A_PIN, ENC_B_PIN)
-    #encoder.start()
+    enc_a = Button(ENC_A_PIN, pull_up=True)
+    enc_b = Button(ENC_B_PIN, pull_up=True)
+    def enc_a_rising():
+        if enc_b.is_pressed:
+            pygame.event.post(
+                pygame.event.Event(
+                    pygame.locals.KEYDOWN,
+                    key=K_DOWN,
+                    mod=KMOD_NONE
+                )
+            )
+    def enc_b_rising():
+        if enc_a.is_pressed:
+            pygame.event.post(
+                pygame.event.Event(
+                    pygame.locals.KEYDOWN,
+                    key=K_UP,
+                    mod=KMOD_NONE
+                )
+            )
+    enc_a.when_pressed = enc_a_rising
+    enc_b.when_pressed = enc_b_rising
 
     button = Button(SW_PIN, pull_up=True)
-    def __enter_timer_screen():
+    def __enter_or_exit_timer_screen():
         # pressing rotary encoder raises same event as pressing enter
         pygame.event.post(
             pygame.event.Event(
@@ -236,22 +255,11 @@ if __name__ == "__main__":
                 mod=KMOD_NONE
             )
         )
-    button.when_pressed = __enter_timer_screen
+    button.when_pressed = __enter_or_exit_timer_screen
 
     # Interact + draw loop
     print("running")
     while True:
-
-        # # Handle rotary encoder
-        # delta = encoder.get_cycles()
-        # if delta != 0:
-        #     print ("rotated {}".format(delta))
-
-        #     update_display = True
-        #     if delta < 0:
-        #         selector.move_selection(Direction.DOWN)
-        #     elif delta > 0:
-        #         selector.move_selection(Direction.UP)
 
         # Get any events
         pyg_events = pygame.event.get()
@@ -261,13 +269,13 @@ if __name__ == "__main__":
         # Manipulate UI via I/O event type
         for event in pyg_events:
 
-            # coords for touch screen  #TODO make this do something
+            # coords for touch screen  # TODO: make this do something
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = (pygame.mouse.get_pos() [0], pygame.mouse.get_pos() [1])
                 print("mouse on pos {}".format(pos))
 
             # handle keys
-            if event.type == KEYDOWN: # TODO implement encoder
+            if event.type == KEYDOWN: # TODO: implement encoder
                 if mode == DisplayMode.SELECTOR:
                     if event.key == K_ESCAPE:
                         print("kescape: EXIT TO TERMINAL")
@@ -279,11 +287,13 @@ if __name__ == "__main__":
                         selector.move_selection(Direction.UP)
                         print("kup")
                     elif event.key == K_RETURN:
+                        print("kenter")
+                        # enter timer
                         timer.set_job(selector.get_job())
                         mode = DisplayMode.TIMER
-                        print("kenter")
+
                 elif mode == DisplayMode.TIMER:
-                    if event.key == K_ESCAPE or event.key == K_BACKSPACE:
+                    if event.key == K_ESCAPE or event.key == K_RETURN:
                         mode = DisplayMode.SELECTOR
                         print("kescape: EXIT TO SELECTOR")
 
