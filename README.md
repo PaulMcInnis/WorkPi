@@ -3,7 +3,7 @@ One-button time-management with the Raspberry Pi.
 
 Ever get frustrated by time logging? Replace all that time spent navigating crummy UI and doing mental math with a Work Pi on your desk!
 
-![](https://github.com/PaulMcInnis/WorkPi/blob/master/workpi.jpg | width=100)
+![](https://github.com/PaulMcInnis/WorkPi/blob/master/workpi.jpg)
 
 It's very easy to use, with only one button
 
@@ -67,8 +67,13 @@ There isn't a whole lot going on beyond just a simple startup script:
 3. Make it run on startup by adding `sudo python3 /home/pi/WorkPi/run.py` to  new file`/etc/init.d/workpiscript`
 4.  `cd` to `/home/pi/WorkPi` and run `sudo python3 install -r requirements`
 
-# TODO:
+----
+
+## TODO:
 I implore anyone intetested in using this as a work logger to help with the following tasks:
 * export functionality
 * API connection i.e. JIRA
 
+----
+This material was developed as part of an internal DarwinAI Hackathon held on Friday, March 20, 2020. 
+For more information on DarwinAI, please visit: https://www.darwinai.com/
