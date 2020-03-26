@@ -1,15 +1,19 @@
 # Work Pi
 One-button time-management with the Raspberry Pi.
 
-Ever get frustrated by JIRA's time logging? Replace all that time spent navigating crummy UI and doing mental math with a Work Pi on your desk!
+Ever get frustrated by time logging? Replace all that time spent navigating crummy UI and doing mental math with a Work Pi on your desk!
 
-![workpi](https://github.com/PaulMcInnis/WorkPi/blob/master/workpi.jpg)
+![](https://github.com/PaulMcInnis/WorkPi/blob/master/workpi.jpg | width=100)
 
 It's very easy to use, with only one button
 
 * rotate to scroll through currently-assigned tasks
 * click to start time logging
 * click to stop time logging
+
+Note that this is a work in progress and currently has no export feature - it is easy to integrate into any time-logging API.
+
+This is also an excellent platform for any project involving a rotary-encoder and a raspberry pi. Use this to build your own weather station or thermostat interface or other such things if you like. 
 
 ----
 
@@ -63,5 +67,8 @@ There isn't a whole lot going on beyond just a simple startup script:
 3. Make it run on startup by adding `sudo python3 /home/pi/WorkPi/run.py` to  new file`/etc/init.d/workpiscript`
 4.  `cd` to `/home/pi/WorkPi` and run `sudo python3 install -r requirements`
 
-
+# TODO:
+I implore anyone intetested in using this as a work logger to help with the following tasks:
+* export functionality
+* API connection i.e. JIRA
 
